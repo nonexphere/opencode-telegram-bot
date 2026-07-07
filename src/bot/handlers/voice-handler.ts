@@ -17,7 +17,7 @@ import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
 import { buildTelegramFileUrl } from "../../app/services/file-download-service.js";
 
-const TELEGRAM_DOWNLOAD_TIMEOUT_MS = 30_000;
+const TELEGRAM_DOWNLOAD_TIMEOUT_MS = 60_000;
 const TELEGRAM_DOWNLOAD_MAX_REDIRECTS = 3;
 
 let telegramDownloadAgent: https.RequestOptions["agent"] | null | undefined;
@@ -51,6 +51,7 @@ async function downloadTelegramFileByUrl(url: string, redirectDepth: number = 0)
       targetUrl,
       {
         agent: getTelegramDownloadAgent(),
+        family: 4,
         ...(proxySecret ? { headers: { "X-Proxy-Secret": proxySecret } } : {}),
       },
       (response) => {
