@@ -77,6 +77,9 @@ export const ru: I18nDictionary = {
   "bot.create_session_error":
     "🔴 Не удалось создать сессию. Попробуйте команду /new или проверьте статус сервера /status.",
   "bot.session_created": "✅ Сессия создана: {title}",
+  "bot.queue_enqueued": "📝 Сообщение в очереди (позиция {position}). Будет отправлено по завершении текущего выполнения.",
+  "bot.queue_dispatching": "▶️ Отправка следующего сообщения из очереди…",
+  "bot.queue_empty_after": "✅ Очередь очищена.",
   "bot.session_busy":
     "⏳ Агент уже выполняет задачу. Дождитесь завершения или используйте /abort, чтобы прервать текущий запуск.",
   "bot.session_reset_project_mismatch":

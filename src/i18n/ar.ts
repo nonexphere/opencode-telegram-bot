@@ -81,6 +81,9 @@ export const ar: I18nDictionary = {
   "bot.create_session_error":
     "🔴 تعذر بدء جلسة جديدة. جرّب /new أو افحص حالة الخادم باستخدام /status.",
   "bot.session_created": "✅ تم إنشاء الجلسة: {title}",
+  "bot.queue_enqueued": "📝 تم وضع الرسالة في قائمة الانتظار (المركز {position}). سيتم إرسالها عند انتهاء التشغيل الحالي.",
+  "bot.queue_dispatching": "▶️ جارٍ إرسال الرسالة التالية من قائمة الانتظار…",
+  "bot.queue_empty_after": "✅ تم تفريغ قائمة الانتظار.",
   "bot.session_busy":
     "⏳ الوكيل مشغول بتنفيذ مهمة الآن. انتظر حتى ينتهي، أو استخدم /abort لإيقاف المهمة الحالية.",
   "bot.session_reset_project_mismatch":

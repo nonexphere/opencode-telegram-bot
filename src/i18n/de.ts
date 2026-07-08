@@ -81,6 +81,9 @@ export const de: I18nDictionary = {
   "bot.create_session_error":
     "🔴 Sitzung konnte nicht erstellt werden. Versuche /new oder prüfe den Serverstatus mit /status.",
   "bot.session_created": "✅ Sitzung erstellt: {title}",
+  "bot.queue_enqueued": "📝 Nachricht in Warteschlange (Position {position}). Wird gesendet, wenn der aktuelle Lauf endet.",
+  "bot.queue_dispatching": "▶️ Nächste Nachricht aus der Warteschlange wird gesendet…",
+  "bot.queue_empty_after": "✅ Warteschlange abgearbeitet.",
   "bot.session_busy":
     "⏳ Agent führt bereits eine Aufgabe aus. Warte auf Abschluss oder nutze /abort, um den aktuellen Lauf zu unterbrechen.",
   "bot.session_reset_project_mismatch":

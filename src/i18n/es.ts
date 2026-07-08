@@ -82,6 +82,9 @@ export const es: I18nDictionary = {
   "bot.create_session_error":
     "🔴 No se pudo crear la sesión. Prueba /new o revisa el estado del servidor con /status.",
   "bot.session_created": "✅ Sesión creada: {title}",
+  "bot.queue_enqueued": "📝 Mensaje encolado (posición {position}). Se enviará cuando termine la ejecución actual.",
+  "bot.queue_dispatching": "▶️ Enviando siguiente mensaje de la cola…",
+  "bot.queue_empty_after": "✅ Cola vaciada.",
   "bot.session_busy":
     "⏳ El agente ya está ejecutando una tarea. Espera a que termine o usa /abort para interrumpir la ejecución actual.",
   "bot.session_reset_project_mismatch":

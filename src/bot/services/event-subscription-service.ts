@@ -44,6 +44,7 @@ import { formatAssistantRunFooter } from "../../app/formatters/assistant-run-foo
 import { foregroundSessionState } from "../../app/managers/foreground-session-state-manager.js";
 import { scheduledTaskRuntime } from "../../app/services/scheduled-task-runtime-service.js";
 import { assistantRunState } from "../../app/managers/assistant-run-state-manager.js";
+import { promptQueueManager } from "../../app/managers/prompt-queue-manager.js";
 import { ResponseStreamer, type StreamingMessagePayload } from "../streaming/response-streamer.js";
 import { ToolCallStreamer, type ToolStreamKey } from "../streaming/tool-call-streamer.js";
 import { CompactProgressStreamer } from "../streaming/compact-progress-streamer.js";
@@ -889,6 +890,12 @@ class EventSubscriptionService implements BotEventSubscriptionService {
       } finally {
         foregroundSessionState.markIdle(sessionId);
         await scheduledTaskRuntime.flushDeferredDeliveries();
+        // Dispatch next queued prompt for this session, if any
+        const idleSession = getCurrentSession();
+        const idleDirectory = idleSession?.directory ?? "";
+        if (idleDirectory) {
+          await promptQueueManager.dispatchNextForSession(sessionId, idleDirectory);
+        }
       }
     });
 
@@ -928,6 +935,12 @@ class EventSubscriptionService implements BotEventSubscriptionService {
         logger.debug(`[Bot] Suppressed user-initiated abort error: session=${sessionId}`);
         foregroundSessionState.markIdle(sessionId);
         await scheduledTaskRuntime.flushDeferredDeliveries();
+        // After user abort, dispatch next queued prompt if any
+        const abortSession = getCurrentSession();
+        const abortDirectory = abortSession?.directory ?? "";
+        if (abortDirectory) {
+          await promptQueueManager.dispatchNextForSession(sessionId, abortDirectory);
+        }
         return;
       }
 

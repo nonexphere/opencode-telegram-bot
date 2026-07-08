@@ -78,6 +78,9 @@ export const en = {
   "bot.create_session_error":
     "🔴 Failed to create session. Try /new or check server status with /status.",
   "bot.session_created": "✅ Session created: {title}",
+  "bot.queue_enqueued": "📝 Message queued (position {position}). It will be sent when the current run finishes.",
+  "bot.queue_dispatching": "▶️ Dispatching next queued message…",
+  "bot.queue_empty_after": "✅ Queue drained.",
   "bot.session_busy":
     "⏳ Agent is already running a task. Wait for completion or use /abort to interrupt current run.",
   "bot.session_reset_project_mismatch":

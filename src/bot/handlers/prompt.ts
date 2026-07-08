@@ -25,6 +25,11 @@ import { t } from "../../i18n/index.js";
 import { foregroundSessionState } from "../../app/managers/foreground-session-state-manager.js";
 import { assistantRunState } from "../../app/managers/assistant-run-state-manager.js";
 import {
+  promptQueueManager,
+  dispatchQueuedPrompt,
+  type QueuedPrompt,
+} from "../../app/managers/prompt-queue-manager.js";
+import {
   attachToSession,
   detachAttachedSession,
   markAttachedSessionBusy,
@@ -93,6 +98,7 @@ async function resetMismatchedSessionContext(): Promise<void> {
   summaryAggregator.clear();
   foregroundSessionState.clearAll("session_mismatch_reset");
   assistantRunState.clearAll("session_mismatch_reset");
+  promptQueueManager.clearAll("session_mismatch_reset");
   clearAllInteractionState("session_mismatch_reset");
   clearSession();
   keyboardManager.clearContext();
@@ -142,6 +148,8 @@ export async function processUserPrompt(
 
   botInstance = bot;
   chatIdInstance = ctx.chat!.id;
+  promptQueueManager.setContext(bot, ctx.chat!.id);
+  promptQueueManager.setDispatcher(dispatchQueuedPrompt);
 
   let currentSession = getCurrentSession();
   let createdNewSession = false;
@@ -213,8 +221,18 @@ export async function processUserPrompt(
 
   const sessionIsBusy = await isSessionBusy(currentSession.id, currentSession.directory);
   if (sessionIsBusy) {
-    logger.info(`[Bot] Ignoring new prompt: session ${currentSession.id} is busy`);
-    await ctx.reply(t("bot.session_busy"));
+    logger.info(`[Bot] Session ${currentSession.id} is busy; enqueuing prompt instead of blocking`);
+    const enqueuedAgent = await resolveProjectAgent(getStoredAgent());
+    const queued: QueuedPrompt = {
+      sessionId: currentSession.id,
+      directory: currentSession.directory,
+      text,
+      fileParts,
+      agent: enqueuedAgent,
+      enqueuedAt: Date.now(),
+    };
+    const position = promptQueueManager.enqueue(queued);
+    await ctx.reply(t("bot.queue_enqueued", { position })).catch(() => undefined);
     return false;
   }
 

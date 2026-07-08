@@ -4,6 +4,12 @@ import type { BlockReason, InteractionKind } from "../../app/types/interaction.j
 import { reconcileForegroundBusyState } from "../../app/services/run-control-service.js";
 import { logger } from "../../utils/logger.js";
 import { t } from "../../i18n/index.js";
+import {
+  promptQueueManager,
+  type QueuedPrompt,
+} from "../../app/managers/prompt-queue-manager.js";
+import { getCurrentSession } from "../../app/services/session-service.js";
+import { getStoredAgent } from "../../app/services/agent-selection-service.js";
 
 function getInteractionBlockedMessage(
   reason: BlockReason | undefined,
@@ -95,6 +101,47 @@ export async function interactionGuardMiddleware(ctx: Context, next: NextFunctio
   if (decision.allow) {
     await next();
     return;
+  }
+
+  // Busy + text input + no pending question/permission/rename/task interaction:
+  // enqueue the prompt instead of blocking, so the user can queue follow-ups
+  // while the assistant is still running.
+  const isPendingInteraction =
+    decision.state?.kind === "question" ||
+    decision.state?.kind === "permission" ||
+    decision.state?.kind === "rename" ||
+    decision.state?.kind === "task" ||
+    decision.state?.kind === "inline" ||
+    decision.state?.kind === "custom";
+
+  if (
+    decision.busy &&
+    !isPendingInteraction &&
+    decision.inputType === "text" &&
+    !decision.command
+  ) {
+    const text = ctx.message?.text;
+    if (typeof text === "string" && text.trim().length > 0) {
+      const currentSession = getCurrentSession();
+      if (currentSession) {
+        const queued: QueuedPrompt = {
+          sessionId: currentSession.id,
+          directory: currentSession.directory,
+          text,
+          fileParts: [],
+          agent: getStoredAgent(),
+          enqueuedAt: Date.now(),
+        };
+        const position = promptQueueManager.enqueue(queued);
+        logger.info(
+          `[InteractionGuard] Enqueued prompt while busy: session=${currentSession.id}, position=${position}`,
+        );
+        await ctx.reply(t("bot.queue_enqueued", { position })).catch((err) => {
+          logger.error("[InteractionGuard] Failed to send queue ack:", err);
+        });
+        return;
+      }
+    }
   }
 
   const message = decision.busy
